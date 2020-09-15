@@ -248,15 +248,21 @@ void lv_canvas_copy_buf(lv_obj_t * canvas, const void * to_copy, lv_coord_t x, l
         return;
     }
 
-    uint32_t px_size   = lv_img_cf_get_px_size(ext->dsc.header.cf) >> 3;
-    uint32_t px        = ext->dsc.header.w * y * px_size + x * px_size;
-    uint8_t * to_copy8 = (uint8_t *)to_copy;
-    lv_coord_t i;
-    for(i = 0; i < h; i++) {
-        _lv_memcpy((void *)&ext->dsc.data[px], to_copy8, w * px_size);
-        px += ext->dsc.header.w * px_size;
-        to_copy8 += w * px_size;
-    }
+    lv_img_cf_t cf = ext->dsc.header.cf;
+    uint32_t bpp = lv_img_cf_get_px_size(cf);
+    uint32_t pal = lv_img_buf_get_palette_size(cf);
+   
+    LV_LOG_WARN("PAL %d", pal);
+    uint32_t dst_stride = lv_img_buf_get_img_stride(ext->dsc.header.w, cf);
+    uint32_t src_stride = lv_img_buf_get_img_stride(w, cf);
+    
+    uint8_t* src = ((uint8_t*) to_copy) + pal;
+    uint8_t* dst = ((uint8_t*) ext->dsc.data)
+                 + pal // offset to first pixel 
+                 + (y * dst_stride) // move to row
+                 + ((x * bpp) >> 3); // move to col
+
+    for (int row=0; row<h; row++) _lv_memcpy(dst + row * dst_stride, src + row * src_stride, w * bpp >> 3);
 }
 
 /**

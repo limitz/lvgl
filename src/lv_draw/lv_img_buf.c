@@ -375,6 +375,42 @@ void lv_img_buf_free(lv_img_dsc_t * dsc)
 }
 
 /**
+ * Get the stride of an image row, given color format and width.
+ * @param w width
+ * @param cf color format
+ * @return size in bytes
+ */
+uint32_t lv_img_buf_get_img_stride(lv_coord_t w, lv_img_cf_t cf)
+{
+    switch(cf) {
+        case LV_IMG_CF_TRUE_COLOR:
+            return LV_IMG_BUF_STRIDE_TRUE_COLOR(w);
+        case LV_IMG_CF_TRUE_COLOR_ALPHA:
+            return LV_IMG_BUF_STRIDE_TRUE_COLOR_ALPHA(w);
+        case LV_IMG_CF_TRUE_COLOR_CHROMA_KEYED:
+            return LV_IMG_BUF_STRIDE_TRUE_COLOR_CHROMA_KEYED(w);
+        case LV_IMG_CF_ALPHA_1BIT:
+            return LV_IMG_BUF_STRIDE_ALPHA_1BIT(w);
+        case LV_IMG_CF_ALPHA_2BIT:
+            return LV_IMG_BUF_STRIDE_ALPHA_2BIT(w);
+        case LV_IMG_CF_ALPHA_4BIT:
+            return LV_IMG_BUF_STRIDE_ALPHA_4BIT(w);
+        case LV_IMG_CF_ALPHA_8BIT:
+            return LV_IMG_BUF_STRIDE_ALPHA_8BIT(w);
+        case LV_IMG_CF_INDEXED_1BIT:
+            return LV_IMG_BUF_STRIDE_INDEXED_1BIT(w);
+        case LV_IMG_CF_INDEXED_2BIT:
+            return LV_IMG_BUF_STRIDE_INDEXED_2BIT(w);
+        case LV_IMG_CF_INDEXED_4BIT:
+            return LV_IMG_BUF_STRIDE_INDEXED_4BIT(w);
+        case LV_IMG_CF_INDEXED_8BIT:
+            return LV_IMG_BUF_STRIDE_INDEXED_8BIT(w);
+        default:
+            return 0;
+    }
+}
+
+/**
  * Get the memory consumption of a raw bitmap, given color format and dimensions.
  * @param w width
  * @param h height
@@ -406,6 +442,27 @@ uint32_t lv_img_buf_get_img_size(lv_coord_t w, lv_coord_t h, lv_img_cf_t cf)
             return LV_IMG_BUF_SIZE_INDEXED_4BIT(w, h);
         case LV_IMG_CF_INDEXED_8BIT:
             return LV_IMG_BUF_SIZE_INDEXED_8BIT(w, h);
+        default:
+            return 0;
+    }
+}
+
+/**
+ * Get the memory needed for the palette, given color format.
+ * @param cf color format
+ * @return size in bytes
+ */
+uint32_t lv_img_buf_get_palette_size(lv_img_cf_t cf)
+{
+    switch(cf) {
+        case LV_IMG_CF_INDEXED_1BIT:
+            return sizeof(lv_color32_t) * 2;
+        case LV_IMG_CF_INDEXED_2BIT:
+            return sizeof(lv_color32_t) * 4;
+        case LV_IMG_CF_INDEXED_4BIT:
+            return sizeof(lv_color32_t) * 16;
+        case LV_IMG_CF_INDEXED_8BIT:
+            return sizeof(lv_color32_t) * 256;
         default:
             return 0;
     }

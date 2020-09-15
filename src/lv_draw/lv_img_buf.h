@@ -30,21 +30,34 @@ extern "C" {
 #define LV_IMG_PX_SIZE_ALPHA_BYTE 4
 #endif
 
-#define LV_IMG_BUF_SIZE_TRUE_COLOR(w, h) ((LV_COLOR_SIZE / 8) * w * h)
-#define LV_IMG_BUF_SIZE_TRUE_COLOR_CHROMA_KEYED(w, h) ((LV_COLOR_SIZE / 8) * w * h)
-#define LV_IMG_BUF_SIZE_TRUE_COLOR_ALPHA(w, h) (LV_IMG_PX_SIZE_ALPHA_BYTE * w * h)
+#define LV_IMG_BUF_STRIDE_TRUE_COLOR(w) ((LV_COLOR_SIZE >> 3) * (w))
+#define LV_IMG_BUF_STRIDE_TRUE_COLOR_CHROMA_KEYED(w) LV_IMG_BUF_STRIDE_TRUE_COLOR(w)
+#define LV_IMG_BUF_STRIDE_TRUE_COLOR_ALPHA(w) (LV_IMG_PX_SIZE_ALPHA_BYTE * (w))
+#define LV_IMG_BUF_SIZE_TRUE_COLOR(w, h) (LV_IMG_BUF_STRIDE_TRUE_COLOR(w) * (h))
+#define LV_IMG_BUF_SIZE_TRUE_COLOR_CHROMA_KEYED(w, h) (LV_IMG_BUF_STRIDE_TRUE_COLOR_CHROMA_KEYED(w) * (h))
+#define LV_IMG_BUF_SIZE_TRUE_COLOR_ALPHA(w, h) (LV_IMG_BUF_STRIDE_TRUE_COLOR_ALPHA(w) * (h))
 
-/*+ 1: to be sure no fractional row*/
-#define LV_IMG_BUF_SIZE_ALPHA_1BIT(w, h) ((((w / 8) + 1) * h))
-#define LV_IMG_BUF_SIZE_ALPHA_2BIT(w, h) ((((w / 4) + 1) * h))
-#define LV_IMG_BUF_SIZE_ALPHA_4BIT(w, h) ((((w / 2) + 1) * h))
-#define LV_IMG_BUF_SIZE_ALPHA_8BIT(w, h) ((w * h))
+/*+ 1: to be sure no fractional row, when mod bpp != 0*/
+#define LV_IMG_BUF_STRIDE_ALPHA_1BIT(w) (((w)+7)>>3)
+#define LV_IMG_BUF_STRIDE_ALPHA_2BIT(w) (((w)+3)>>2)
+#define LV_IMG_BUF_STRIDE_ALPHA_4BIT(w) (((w)+1)>>1)
+#define LV_IMG_BUF_STRIDE_ALPHA_8BIT(w) ((w))
+
+#define LV_IMG_BUF_SIZE_ALPHA_1BIT(w, h) (LV_IMG_BUF_STRIDE_ALPHA_1BIT(w) * (h))
+#define LV_IMG_BUF_SIZE_ALPHA_2BIT(w, h) (LV_IMG_BUF_STRIDE_ALPHA_2BIT(w) * (h))
+#define LV_IMG_BUF_SIZE_ALPHA_4BIT(w, h) (LV_IMG_BUF_STRIDE_ALPHA_4BIT(w) * (h))
+#define LV_IMG_BUF_SIZE_ALPHA_8BIT(w, h) (LV_IMG_BUF_STRIDE_ALPHA_8BIT(w) * (h))
 
 /*4 * X: for palette*/
-#define LV_IMG_BUF_SIZE_INDEXED_1BIT(w, h) (LV_IMG_BUF_SIZE_ALPHA_1BIT(w, h) + 4 * 2)
-#define LV_IMG_BUF_SIZE_INDEXED_2BIT(w, h) (LV_IMG_BUF_SIZE_ALPHA_2BIT(w, h) + 4 * 4)
-#define LV_IMG_BUF_SIZE_INDEXED_4BIT(w, h) (LV_IMG_BUF_SIZE_ALPHA_4BIT(w, h) + 4 * 16)
-#define LV_IMG_BUF_SIZE_INDEXED_8BIT(w, h) (LV_IMG_BUF_SIZE_ALPHA_8BIT(w, h) + 4 * 256)
+#define LV_IMG_BUF_STRIDE_INDEXED_1BIT(w) LV_IMG_BUF_STRIDE_ALPHA_1BIT(w)
+#define LV_IMG_BUF_STRIDE_INDEXED_2BIT(w) LV_IMG_BUF_STRIDE_ALPHA_2BIT(w)
+#define LV_IMG_BUF_STRIDE_INDEXED_4BIT(w) LV_IMG_BUF_STRIDE_ALPHA_4BIT(w)
+#define LV_IMG_BUF_STRIDE_INDEXED_8BIT(w) LV_IMG_BUF_STRIDE_ALPHA_8BIT(w)
+
+#define LV_IMG_BUF_SIZE_INDEXED_1BIT(w, h) (LV_IMG_BUF_STRIDE_INDEXED_1BIT(w)*(h) + 4 * 2)
+#define LV_IMG_BUF_SIZE_INDEXED_2BIT(w, h) (LV_IMG_BUF_STRIDE_INDEXED_2BIT(w)*(h) + 4 * 4)
+#define LV_IMG_BUF_SIZE_INDEXED_4BIT(w, h) (LV_IMG_BUF_STRIDE_INDEXED_4BIT(w)*(h) + 4 * 16)
+#define LV_IMG_BUF_SIZE_INDEXED_8BIT(w, h) (LV_IMG_BUF_STRIDE_INDEXED_8BIT(w)*(h) + 4 * 256)
 
 #define LV_IMG_ZOOM_NONE   256
 
@@ -269,6 +282,20 @@ void lv_img_buf_free(lv_img_dsc_t * dsc);
  */
 uint32_t lv_img_buf_get_img_size(lv_coord_t w, lv_coord_t h, lv_img_cf_t cf);
 
+/**
+ * Get the memory needed for the palette, given color format.
+ * @param cf color format
+ * @return size in bytes
+ */
+uint32_t lv_img_buf_get_palette_size(lv_img_cf_t cf);
+
+/**
+ * Get the stride of an image row in memory given color format and width..
+ * @param w width
+ * @param cf color format
+ * @return size in bytes
+ */
+uint32_t lv_img_buf_get_img_stride(lv_coord_t w, lv_img_cf_t cf);
 
 #if LV_USE_IMG_TRANSFORM
 /**
